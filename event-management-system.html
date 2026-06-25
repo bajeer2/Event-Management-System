@@ -1,0 +1,1792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Event Management System By: Rashid Akbar</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+:root {
+  --navy: #0A0E27;
+  --navy-2: #111530;
+  --navy-3: #1A1F3A;
+  --navy-4: #232845;
+  --indigo: #6C63FF;
+  --indigo-light: #8B84FF;
+  --indigo-dark: #4B44CC;
+  --coral: #FF6584;
+  --coral-dark: #E04060;
+  --mint: #43E8D8;
+  --mint-dark: #2CC9B9;
+  --amber: #FFB347;
+  --text-primary: #F8F9FF;
+  --text-secondary: #A0A8C8;
+  --text-muted: #6A7290;
+  --border: rgba(108,99,255,0.2);
+  --border-light: rgba(255,255,255,0.08);
+  --card-bg: rgba(26,31,58,0.8);
+  --card-border: rgba(108,99,255,0.25);
+  --sidebar-w: 260px;
+  --transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body {
+  font-family:'Inter',sans-serif;
+  background:var(--navy);
+  color:var(--text-primary);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+body::before {
+  content:'';
+  position:fixed;
+  top:0;left:0;right:0;bottom:0;
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 10%, rgba(108,99,255,0.12) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 80%, rgba(67,232,216,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 60% at 90% 20%, rgba(255,101,132,0.06) 0%, transparent 60%);
+  pointer-events:none;
+  z-index:0;
+}
+
+/* SIDEBAR */
+.sidebar {
+  position:fixed;
+  top:0;left:0;
+  width:var(--sidebar-w);
+  height:100vh;
+  background:var(--navy-2);
+  border-right:1px solid var(--border-light);
+  display:flex;
+  flex-direction:column;
+  z-index:100;
+  transition:var(--transition);
+  overflow:hidden;
+}
+.sidebar-logo {
+  padding:24px 20px 20px;
+  border-bottom:1px solid var(--border-light);
+}
+.logo-mark {
+  display:flex;align-items:center;gap:10px;
+}
+.logo-icon {
+  width:38px;height:38px;
+  background:linear-gradient(135deg,var(--indigo),var(--coral));
+  border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;
+  animation:logoPulse 3s ease-in-out infinite;
+}
+@keyframes logoPulse {
+  0%,100%{box-shadow:0 0 0 0 rgba(108,99,255,0.4);}
+  50%{box-shadow:0 0 0 8px rgba(108,99,255,0);}
+}
+.logo-text {
+  font-family:'Space Grotesk',sans-serif;
+  font-size:20px;font-weight:700;
+  background:linear-gradient(90deg,var(--indigo-light),var(--mint));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.logo-sub {
+  font-size:10px;color:var(--text-muted);letter-spacing:2px;text-transform:uppercase;margin-top:2px;
+}
+.sidebar-nav {
+  flex:1;padding:16px 12px;overflow-y:auto;
+}
+.nav-section-label {
+  font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;
+  color:var(--text-muted);padding:8px 8px 4px;margin-top:8px;
+}
+.nav-item {
+  display:flex;align-items:center;gap:12px;
+  padding:10px 12px;border-radius:10px;
+  cursor:pointer;transition:var(--transition);
+  margin-bottom:2px;color:var(--text-secondary);
+  font-size:13.5px;font-weight:500;position:relative;
+  border:1px solid transparent;
+}
+.nav-item:hover {
+  background:rgba(108,99,255,0.1);color:var(--text-primary);
+  border-color:var(--border);
+}
+.nav-item.active {
+  background:linear-gradient(90deg,rgba(108,99,255,0.2),rgba(108,99,255,0.05));
+  color:var(--indigo-light);border-color:var(--card-border);
+}
+.nav-item.active::before {
+  content:'';position:absolute;left:-12px;top:50%;transform:translateY(-50%);
+  width:3px;height:70%;background:var(--indigo);border-radius:2px;
+}
+.nav-icon{font-size:18px;width:20px;text-align:center;}
+.nav-badge {
+  margin-left:auto;background:var(--indigo);color:#fff;
+  font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px;
+}
+.sidebar-footer {
+  padding:16px 20px;border-top:1px solid var(--border-light);
+  font-size:12px;color:var(--text-muted);
+}
+
+/* MAIN */
+.main-content {
+  margin-left:var(--sidebar-w);
+  min-height:100vh;
+  position:relative;z-index:1;
+  transition:var(--transition);
+}
+.topbar {
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 32px;
+  background:rgba(10,14,39,0.8);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border-light);
+  position:sticky;top:0;z-index:50;
+}
+.topbar-title {
+  font-family:'Space Grotesk',sans-serif;
+  font-size:20px;font-weight:600;
+}
+.topbar-right{display:flex;align-items:center;gap:12px;}
+.topbar-badge {
+  display:flex;align-items:center;gap:6px;
+  background:rgba(67,232,216,0.1);border:1px solid rgba(67,232,216,0.3);
+  color:var(--mint);padding:6px 14px;border-radius:20px;font-size:12px;font-weight:500;
+}
+.pulse-dot {
+  width:7px;height:7px;border-radius:50%;background:var(--mint);
+  animation:pulse 1.5s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.5;transform:scale(0.8);}}
+.topbar-btn {
+  background:rgba(108,99,255,0.15);border:1px solid var(--border);
+  color:var(--indigo-light);padding:7px 16px;border-radius:8px;
+  cursor:pointer;font-size:13px;font-weight:500;transition:var(--transition);
+  display:flex;align-items:center;gap:6px;
+}
+.topbar-btn:hover{background:rgba(108,99,255,0.3);border-color:var(--indigo);}
+
+/* PAGE */
+.page{display:none;padding:32px;}
+.page.active{display:block;animation:fadeIn 0.4s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+
+/* CARDS */
+.glass-card {
+  background:var(--card-bg);
+  border:1px solid var(--card-border);
+  border-radius:16px;
+  backdrop-filter:blur(20px);
+  transition:var(--transition);
+}
+.glass-card:hover{border-color:rgba(108,99,255,0.4);}
+
+.stat-card {
+  background:var(--card-bg);
+  border:1px solid var(--card-border);
+  border-radius:16px;
+  padding:24px;
+  position:relative;overflow:hidden;
+  transition:var(--transition);
+}
+.stat-card::before {
+  content:'';position:absolute;top:0;right:0;
+  width:80px;height:80px;border-radius:50%;
+  transform:translate(20px,-20px);opacity:0.15;
+}
+.stat-card.purple::before{background:var(--indigo);}
+.stat-card.coral::before{background:var(--coral);}
+.stat-card.mint::before{background:var(--mint);}
+.stat-card.amber::before{background:var(--amber);}
+.stat-card:hover{transform:translateY(-3px);border-color:rgba(108,99,255,0.5);box-shadow:0 12px 40px rgba(108,99,255,0.15);}
+
+.stat-icon {
+  width:44px;height:44px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;margin-bottom:16px;
+}
+.stat-icon.purple{background:rgba(108,99,255,0.2);color:var(--indigo-light);}
+.stat-icon.coral{background:rgba(255,101,132,0.2);color:var(--coral);}
+.stat-icon.mint{background:rgba(67,232,216,0.2);color:var(--mint);}
+.stat-icon.amber{background:rgba(255,179,71,0.2);color:var(--amber);}
+.stat-number {
+  font-family:'Space Grotesk',sans-serif;
+  font-size:32px;font-weight:700;line-height:1;margin-bottom:4px;
+}
+.stat-label{font-size:13px;color:var(--text-secondary);}
+.stat-change {
+  font-size:12px;margin-top:8px;display:flex;align-items:center;gap:4px;
+  font-weight:500;
+}
+.stat-change.up{color:var(--mint);}
+.stat-change.neutral{color:var(--text-muted);}
+
+/* SECTION HEADER */
+.section-header {
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:20px;
+}
+.section-title {
+  font-family:'Space Grotesk',sans-serif;
+  font-size:17px;font-weight:600;
+}
+.section-sub{font-size:13px;color:var(--text-secondary);margin-top:2px;}
+
+/* FORM */
+.form-section {
+  background:var(--card-bg);
+  border:1px solid var(--card-border);
+  border-radius:16px;
+  padding:32px;
+  backdrop-filter:blur(20px);
+}
+.form-section-title {
+  font-family:'Space Grotesk',sans-serif;
+  font-size:22px;font-weight:700;margin-bottom:6px;
+}
+.form-section-sub{font-size:14px;color:var(--text-secondary);margin-bottom:28px;}
+
+.form-group{margin-bottom:20px;}
+.form-label {
+  display:block;font-size:13px;font-weight:500;
+  color:var(--text-secondary);margin-bottom:8px;
+  letter-spacing:0.3px;
+}
+.form-label span{color:var(--coral);}
+.form-control-custom {
+  width:100%;padding:12px 16px;
+  background:rgba(255,255,255,0.04);
+  border:1px solid var(--border);
+  border-radius:10px;color:var(--text-primary);
+  font-size:14px;font-family:'Inter',sans-serif;
+  transition:var(--transition);outline:none;
+}
+.form-control-custom:focus {
+  border-color:var(--indigo);
+  background:rgba(108,99,255,0.08);
+  box-shadow:0 0 0 3px rgba(108,99,255,0.15);
+}
+.form-control-custom::placeholder{color:var(--text-muted);}
+.form-control-custom option{background:var(--navy-3);color:var(--text-primary);}
+
+.btn-primary-custom {
+  background:linear-gradient(135deg,var(--indigo),var(--indigo-dark));
+  color:#fff;border:none;padding:13px 32px;
+  border-radius:10px;font-size:14px;font-weight:600;
+  cursor:pointer;transition:var(--transition);
+  display:inline-flex;align-items:center;gap:8px;
+  letter-spacing:0.3px;
+}
+.btn-primary-custom:hover{
+  transform:translateY(-1px);
+  box-shadow:0 8px 25px rgba(108,99,255,0.4);
+  background:linear-gradient(135deg,var(--indigo-light),var(--indigo));
+}
+.btn-secondary-custom {
+  background:transparent;
+  color:var(--text-secondary);
+  border:1px solid var(--border);
+  padding:13px 24px;border-radius:10px;
+  font-size:14px;font-weight:500;cursor:pointer;transition:var(--transition);
+}
+.btn-secondary-custom:hover{border-color:var(--indigo);color:var(--indigo-light);}
+
+/* SEARCH */
+.search-bar {
+  position:relative;flex:1;max-width:360px;
+}
+.search-bar input {
+  width:100%;padding:10px 16px 10px 40px;
+  background:rgba(255,255,255,0.05);
+  border:1px solid var(--border);border-radius:10px;
+  color:var(--text-primary);font-size:13px;outline:none;
+  transition:var(--transition);font-family:'Inter',sans-serif;
+}
+.search-bar input:focus{border-color:var(--indigo);background:rgba(108,99,255,0.08);}
+.search-bar input::placeholder{color:var(--text-muted);}
+.search-icon {
+  position:absolute;left:12px;top:50%;transform:translateY(-50%);
+  font-size:15px;color:var(--text-muted);
+}
+
+/* TABLE */
+.table-wrapper {
+  overflow-x:auto;border-radius:12px;
+}
+.custom-table{
+  width:100%;border-collapse:collapse;
+}
+.custom-table th{
+  padding:13px 16px;font-size:11px;font-weight:600;
+  letter-spacing:1px;text-transform:uppercase;
+  color:var(--text-muted);border-bottom:1px solid var(--border-light);
+  text-align:left;white-space:nowrap;
+}
+.custom-table td{
+  padding:14px 16px;font-size:13.5px;
+  border-bottom:1px solid rgba(255,255,255,0.04);
+  color:var(--text-primary);vertical-align:middle;
+}
+.custom-table tr:last-child td{border-bottom:none;}
+.custom-table tr:hover td{background:rgba(108,99,255,0.05);}
+
+/* BADGES */
+.badge-custom {
+  display:inline-flex;align-items:center;gap:5px;
+  padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;
+  letter-spacing:0.3px;
+}
+.badge-present {
+  background:rgba(67,232,216,0.12);
+  color:var(--mint);border:1px solid rgba(67,232,216,0.3);
+}
+.badge-absent {
+  background:rgba(255,101,132,0.12);
+  color:var(--coral);border:1px solid rgba(255,101,132,0.3);
+}
+.badge-registered {
+  background:rgba(108,99,255,0.12);
+  color:var(--indigo-light);border:1px solid var(--border);
+}
+.badge-event {
+  background:rgba(255,179,71,0.12);
+  color:var(--amber);border:1px solid rgba(255,179,71,0.3);
+  padding:3px 8px;border-radius:6px;font-size:11px;font-weight:500;
+}
+
+/* ACTION BTNS */
+.action-btn {
+  width:32px;height:32px;border-radius:8px;border:1px solid var(--border-light);
+  background:transparent;cursor:pointer;transition:var(--transition);
+  display:inline-flex;align-items:center;justify-content:center;
+  font-size:14px;color:var(--text-secondary);
+}
+.action-btn:hover{border-color:var(--indigo);color:var(--indigo-light);background:rgba(108,99,255,0.1);}
+.action-btn.danger:hover{border-color:var(--coral);color:var(--coral);background:rgba(255,101,132,0.1);}
+.action-btn.success:hover{border-color:var(--mint);color:var(--mint);background:rgba(67,232,216,0.1);}
+
+/* AVATAR */
+.avatar {
+  width:34px;height:34px;border-radius:50%;
+  display:inline-flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:600;flex-shrink:0;
+  background:linear-gradient(135deg,var(--indigo),var(--coral));
+  color:#fff;
+}
+
+/* QR PASS */
+.pass-container {
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  gap:20px;
+}
+.event-pass {
+  background:linear-gradient(135deg,var(--navy-3),var(--navy-4));
+  border:1px solid var(--card-border);
+  border-radius:20px;overflow:hidden;
+  position:relative;transition:var(--transition);
+}
+.event-pass:hover{transform:translateY(-4px);box-shadow:0 20px 50px rgba(108,99,255,0.2);}
+.pass-header {
+  background:linear-gradient(135deg,var(--indigo),var(--indigo-dark));
+  padding:20px 20px 24px;position:relative;
+}
+.pass-header::after {
+  content:'';position:absolute;bottom:-12px;left:0;right:0;height:24px;
+  background:var(--navy-3);
+  border-radius:50% 50% 0 0/100%;
+}
+.pass-event-name {
+  font-family:'Space Grotesk',sans-serif;
+  font-size:16px;font-weight:700;color:#fff;margin-bottom:4px;
+}
+.pass-event-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.6);}
+.pass-perforated {
+  display:flex;align-items:center;padding:0 16px;margin:4px 0;
+  position:relative;
+}
+.pass-perforated::before,.pass-perforated::after {
+  content:'';width:20px;height:20px;border-radius:50%;
+  background:var(--navy);position:absolute;top:50%;transform:translateY(-50%);
+  border:1px solid var(--border-light);
+}
+.pass-perforated::before{left:-10px;}
+.pass-perforated::after{right:-10px;}
+.pass-dots {
+  flex:1;border-top:2px dashed var(--border-light);
+}
+.pass-body{padding:16px 20px;}
+.pass-info{display:flex;justify-content:space-between;gap:16px;}
+.pass-field{flex:1;}
+.pass-field-label{font-size:10px;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:3px;}
+.pass-field-value{font-size:13px;font-weight:500;color:var(--text-primary);}
+.pass-qr {
+  margin:16px auto 4px;
+  width:120px;height:120px;
+  background:#fff;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  padding:8px;
+}
+.pass-id {
+  text-align:center;font-size:11px;color:var(--text-muted);
+  letter-spacing:2px;padding-bottom:12px;
+}
+.pass-footer {
+  padding:12px 20px;
+  background:rgba(0,0,0,0.2);
+  display:flex;align-items:center;justify-content:space-between;
+  font-size:11px;
+}
+.pass-status-dot{
+  width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px;
+}
+
+/* ATTENDANCE */
+.attendance-card {
+  background:var(--card-bg);
+  border:1px solid var(--card-border);
+  border-radius:14px;padding:18px 20px;
+  display:flex;align-items:center;gap:16px;
+  transition:var(--transition);
+}
+.attendance-card:hover{border-color:rgba(108,99,255,0.4);}
+.attendance-info{flex:1;}
+.attendance-name{font-size:15px;font-weight:500;margin-bottom:2px;}
+.attendance-meta{font-size:12px;color:var(--text-secondary);}
+.attendance-toggle {
+  width:52px;height:28px;border-radius:14px;
+  border:none;cursor:pointer;position:relative;
+  transition:var(--transition);flex-shrink:0;
+}
+.attendance-toggle.present{background:var(--mint);}
+.attendance-toggle.absent{background:rgba(255,255,255,0.15);}
+.attendance-toggle::after {
+  content:'';position:absolute;top:3px;
+  width:22px;height:22px;border-radius:50%;background:#fff;
+  transition:var(--transition);
+}
+.attendance-toggle.present::after{left:27px;}
+.attendance-toggle.absent::after{left:3px;}
+
+/* MODAL */
+.modal-overlay {
+  position:fixed;inset:0;
+  background:rgba(0,0,0,0.7);
+  backdrop-filter:blur(8px);
+  z-index:999;display:none;
+  align-items:center;justify-content:center;
+  animation:fadeIn 0.2s ease;
+}
+.modal-overlay.show{display:flex;}
+.modal-box {
+  background:var(--navy-2);
+  border:1px solid var(--card-border);
+  border-radius:20px;width:100%;max-width:500px;
+  padding:32px;position:relative;
+  animation:slideUp 0.3s cubic-bezier(0.4,0,0.2,1);
+  max-height:90vh;overflow-y:auto;
+  margin:20px;
+}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+.modal-close {
+  position:absolute;top:16px;right:16px;
+  width:32px;height:32px;border-radius:8px;
+  background:rgba(255,255,255,0.06);border:1px solid var(--border-light);
+  color:var(--text-secondary);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;transition:var(--transition);
+}
+.modal-close:hover{background:rgba(255,101,132,0.1);color:var(--coral);border-color:var(--coral);}
+.modal-title {
+  font-family:'Space Grotesk',sans-serif;
+  font-size:20px;font-weight:700;margin-bottom:6px;
+}
+.modal-sub{font-size:13px;color:var(--text-secondary);margin-bottom:24px;}
+
+/* TOAST */
+.toast-container{
+  position:fixed;top:20px;right:20px;z-index:9999;
+  display:flex;flex-direction:column;gap:8px;
+}
+.toast-item {
+  background:var(--navy-2);border:1px solid var(--card-border);
+  border-radius:12px;padding:12px 16px;
+  display:flex;align-items:center;gap:10px;
+  font-size:13px;min-width:260px;
+  animation:toastIn 0.3s cubic-bezier(0.4,0,0.2,1);
+  box-shadow:0 8px 32px rgba(0,0,0,0.4);
+}
+@keyframes toastIn{from{opacity:0;transform:translateX(20px);}to{opacity:1;transform:translateX(0);}}
+.toast-icon{font-size:18px;}
+.toast-msg{flex:1;}
+
+/* CHART AREA */
+.chart-container{position:relative;height:220px;}
+
+/* EMPTY */
+.empty-state {
+  text-align:center;padding:48px 24px;
+}
+.empty-icon{font-size:48px;margin-bottom:16px;opacity:0.3;}
+.empty-title{font-size:16px;font-weight:500;color:var(--text-secondary);margin-bottom:6px;}
+.empty-sub{font-size:13px;color:var(--text-muted);}
+
+/* HAMBURGER */
+.hamburger {
+  display:none;
+  background:transparent;border:1px solid var(--border);
+  color:var(--text-primary);width:36px;height:36px;
+  border-radius:8px;cursor:pointer;font-size:18px;
+  align-items:center;justify-content:center;
+}
+.sidebar-overlay {
+  display:none;
+  position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:99;
+}
+
+/* PROGRESS BAR */
+.progress-bar-wrap{background:rgba(255,255,255,0.06);border-radius:4px;height:6px;overflow:hidden;}
+.progress-bar-fill{height:100%;border-radius:4px;transition:width 1s ease;}
+
+/* EVENT PILLS */
+.event-pill {
+  display:inline-flex;align-items:center;gap:6px;
+  padding:6px 14px;border-radius:20px;font-size:12px;font-weight:500;
+  cursor:pointer;transition:var(--transition);
+  border:1px solid var(--border);color:var(--text-secondary);
+  background:transparent;
+}
+.event-pill.active,.event-pill:hover{
+  background:rgba(108,99,255,0.15);
+  border-color:var(--indigo);color:var(--indigo-light);
+}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%);}
+  .sidebar.open{transform:translateX(0);}
+  .sidebar-overlay.show{display:block;}
+  .main-content{margin-left:0;}
+  .hamburger{display:flex;}
+  .page{padding:20px 16px;}
+  .topbar{padding:12px 16px;}
+  .topbar-title{font-size:16px;}
+  .pass-container{grid-template-columns:1fr;}
+  .form-section{padding:20px;}
+  .stat-number{font-size:24px;}
+}
+@media(max-width:480px){
+  .topbar-badge{display:none;}
+}
+
+/* Utility */
+.d-flex{display:flex;}.align-center{align-items:center;}
+.gap-2{gap:8px;}.gap-3{gap:12px;}.gap-4{gap:16px;}
+.mb-3{margin-bottom:12px;}.mb-4{margin-bottom:16px;}.mb-5{margin-bottom:20px;}
+.w-100{width:100%;}
+.text-right{text-align:right;}
+.no-participants-row td{text-align:center;padding:40px!important;color:var(--text-muted);}
+.row-grid{display:grid;gap:20px;}
+</style>
+</head>
+<body>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Sidebar Overlay -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">
+      <div class="logo-icon">🎪</div>
+      <div>
+        <div class="logo-text">EventFlow</div>
+        <div class="logo-sub">Management Suite</div>
+      </div>
+    </div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Overview</div>
+    <div class="nav-item active" onclick="showPage('dashboard',this)">
+      <span class="nav-icon">📊</span> Dashboard
+    </div>
+    <div class="nav-section-label">Registration</div>
+    <div class="nav-item" onclick="showPage('register',this)">
+      <span class="nav-icon">📝</span> Register Participant
+    </div>
+    <div class="nav-item" onclick="showPage('participants',this)">
+      <span class="nav-icon">👥</span> Participants
+      <span class="nav-badge" id="participantBadge">0</span>
+    </div>
+    <div class="nav-section-label">Event Tools</div>
+    <div class="nav-item" onclick="showPage('passes',this)">
+      <span class="nav-icon">🎫</span> Entry Passes & QR
+    </div>
+    <div class="nav-item" onclick="showPage('attendance',this)">
+      <span class="nav-icon">✅</span> Attendance
+    </div>
+    <div class="nav-section-label">Events</div>
+    <div class="nav-item" onclick="showPage('events',this)">
+      <span class="nav-icon">🗓️</span> Manage Events
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    EventFlow Created By:- RASHID AKBAR
+  </div>
+</aside>
+
+<!-- Main Content -->
+<main class="main-content">
+  <div class="topbar">
+    <div class="d-flex align-center gap-3">
+      <button class="hamburger" onclick="toggleSidebar()">☰</button>
+      <div class="topbar-title" id="topbarTitle">Admin Dashboard</div>
+    </div>
+    <div class="topbar-right">
+      <div class="topbar-badge">
+        <span class="pulse-dot"></span> Live
+      </div>
+      <button class="topbar-btn" onclick="showPage('register',document.querySelector('.nav-item:nth-child(3)'))">
+        ＋ Register
+      </button>
+    </div>
+  </div>
+
+  <!-- DASHBOARD PAGE -->
+  <div class="page active" id="page-dashboard">
+    <div class="row-grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));margin-bottom:24px;">
+      <div class="stat-card purple">
+        <div class="stat-icon purple">👥</div>
+        <div class="stat-number" id="dash-total">0</div>
+        <div class="stat-label">Total Registrations</div>
+        <div class="stat-change up" id="dash-total-change">↑ 0 this session</div>
+      </div>
+      <div class="stat-card mint">
+        <div class="stat-icon mint">✅</div>
+        <div class="stat-number" id="dash-present">0</div>
+        <div class="stat-label">Attendees Present</div>
+        <div class="stat-change up" id="dash-attendance-rate">0% attendance rate</div>
+      </div>
+      <div class="stat-card coral">
+        <div class="stat-icon coral">🎪</div>
+        <div class="stat-number" id="dash-events">0</div>
+        <div class="stat-label">Active Events</div>
+        <div class="stat-change neutral">Across all categories</div>
+      </div>
+      <div class="stat-card amber">
+        <div class="stat-icon amber">📊</div>
+        <div class="stat-number" id="dash-absent">0</div>
+        <div class="stat-label">Absent / Pending</div>
+        <div class="stat-change neutral" id="dash-absent-pct">0% of total</div>
+      </div>
+    </div>
+
+    <div class="row-grid" style="grid-template-columns:1fr 1fr;margin-bottom:24px;" id="chartsRow">
+      <div class="glass-card" style="padding:24px;">
+        <div class="section-header">
+          <div>
+            <div class="section-title">Attendance Overview</div>
+            <div class="section-sub">Present vs Absent breakdown</div>
+          </div>
+        </div>
+        <div class="chart-container">
+          <canvas id="attendanceChart"></canvas>
+        </div>
+      </div>
+      <div class="glass-card" style="padding:24px;">
+        <div class="section-header">
+          <div>
+            <div class="section-title">Registrations by Event</div>
+            <div class="section-sub">Participant distribution</div>
+          </div>
+        </div>
+        <div class="chart-container">
+          <canvas id="eventChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="glass-card" style="padding:24px;">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Event Progress</div>
+          <div class="section-sub">Capacity & attendance per event</div>
+        </div>
+      </div>
+      <div id="eventProgressList">
+        <div class="empty-state">
+          <div class="empty-icon">🎪</div>
+          <div class="empty-title">No events yet</div>
+          <div class="empty-sub">Add events and register participants to see progress</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REGISTER PAGE -->
+  <div class="page" id="page-register">
+    <div style="max-width:640px;margin:0 auto;">
+      <div class="form-section">
+        <div class="form-section-title">Register Participant</div>
+        <div class="form-section-sub">Fill in the details to register a new participant for an event.</div>
+
+        <form onsubmit="registerParticipant(event)">
+          <div class="row-grid" style="grid-template-columns:1fr 1fr;">
+            <div class="form-group">
+              <label class="form-label">Participant Name <span>*</span></label>
+              <input type="text" class="form-control-custom" id="reg-name" placeholder="e.g. Rashid Akbar" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email Address <span>*</span></label>
+              <input type="email" class="form-control-custom" id="reg-email" placeholder="rashidakbar@gmail.com" required>
+            </div>
+          </div>
+          <div class="row-grid" style="grid-template-columns:1fr 1fr;">
+            <div class="form-group">
+              <label class="form-label">Phone Number <span>*</span></label>
+              <input type="tel" class="form-control-custom" id="reg-phone" placeholder="+92 333-1364276" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Select Event <span>*</span></label>
+              <select class="form-control-custom" id="reg-event" required>
+                <option value="">— Choose an event —</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Organization / Company</label>
+            <input type="text" class="form-control-custom" id="reg-org" placeholder="Optional">
+          </div>
+          <div style="display:flex;gap:12px;margin-top:8px;">
+            <button type="submit" class="btn-primary-custom">
+              🎫 Register & Generate Pass
+            </button>
+            <button type="button" class="btn-secondary-custom" onclick="clearForm()">Clear</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="glass-card" style="margin-top:24px;padding:24px;">
+        <div class="section-title" style="margin-bottom:16px;">Quick Stats</div>
+        <div class="row-grid" style="grid-template-columns:repeat(3,1fr);gap:12px;">
+          <div style="text-align:center;padding:16px;background:rgba(108,99,255,0.08);border-radius:10px;border:1px solid var(--border);">
+            <div style="font-size:22px;font-weight:700;color:var(--indigo-light);" id="qs-total">0</div>
+            <div style="font-size:12px;color:var(--text-secondary);">Registered</div>
+          </div>
+          <div style="text-align:center;padding:16px;background:rgba(67,232,216,0.08);border-radius:10px;border:1px solid rgba(67,232,216,0.2);">
+            <div style="font-size:22px;font-weight:700;color:var(--mint);" id="qs-events">0</div>
+            <div style="font-size:12px;color:var(--text-secondary);">Events</div>
+          </div>
+          <div style="text-align:center;padding:16px;background:rgba(255,101,132,0.08);border-radius:10px;border:1px solid rgba(255,101,132,0.2);">
+            <div style="font-size:22px;font-weight:700;color:var(--coral);" id="qs-attended">0</div>
+            <div style="font-size:12px;color:var(--text-secondary);">Present</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PARTICIPANTS PAGE -->
+  <div class="page" id="page-participants">
+    <div class="section-header mb-5">
+      <div>
+        <div class="section-title">All Participants</div>
+        <div class="section-sub" id="participants-count">0 registered participants</div>
+      </div>
+      <div class="d-flex gap-3">
+        <div class="search-bar">
+          <span class="search-icon">🔍</span>
+          <input type="text" placeholder="Search by name, email, event..." id="searchInput" oninput="filterParticipants()">
+        </div>
+        <select class="form-control-custom" id="filterEvent" onchange="filterParticipants()" style="width:160px;padding:10px 12px;">
+          <option value="">All Events</option>
+        </select>
+      </div>
+    </div>
+    <div class="glass-card">
+      <div class="table-wrapper">
+        <table class="custom-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Participant</th>
+              <th>Contact</th>
+              <th>Event</th>
+              <th>Registered</th>
+              <th>Attendance</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="participantsTable">
+            <tr class="no-participants-row"><td colspan="7">No participants registered yet.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- PASSES PAGE -->
+  <div class="page" id="page-passes">
+    <div class="section-header mb-5">
+      <div>
+        <div class="section-title">Entry Passes & QR Codes</div>
+        <div class="section-sub">Unique entry passes generated for each participant</div>
+      </div>
+      <div class="search-bar">
+        <span class="search-icon">🔍</span>
+        <input type="text" placeholder="Search participants..." id="passSearch" oninput="filterPasses()">
+      </div>
+    </div>
+    <div class="pass-container" id="passContainer">
+      <div class="empty-state" style="grid-column:1/-1;">
+        <div class="empty-icon">🎫</div>
+        <div class="empty-title">No passes generated</div>
+        <div class="empty-sub">Register participants to generate their entry passes</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ATTENDANCE PAGE -->
+  <div class="page" id="page-attendance">
+    <div class="section-header mb-5">
+      <div>
+        <div class="section-title">Attendance Management</div>
+        <div class="section-sub">Mark and track participant attendance</div>
+      </div>
+      <div class="d-flex gap-3 align-center">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;" id="eventFilter">
+          <button class="event-pill active" onclick="filterAttendance('all',this)">All Events</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="row-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:24px;" id="attStatsRow">
+      <div class="stat-card mint" style="padding:18px;">
+        <div class="stat-number" style="font-size:24px;" id="att-present">0</div>
+        <div class="stat-label">Present</div>
+      </div>
+      <div class="stat-card coral" style="padding:18px;">
+        <div class="stat-number" style="font-size:24px;" id="att-absent">0</div>
+        <div class="stat-label">Absent</div>
+      </div>
+      <div class="stat-card purple" style="padding:18px;">
+        <div class="stat-number" style="font-size:24px;" id="att-rate">0%</div>
+        <div class="stat-label">Attendance Rate</div>
+      </div>
+    </div>
+
+    <div style="display:grid;gap:12px;" id="attendanceList">
+      <div class="empty-state">
+        <div class="empty-icon">✅</div>
+        <div class="empty-title">No participants yet</div>
+        <div class="empty-sub">Register participants to manage attendance</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EVENTS PAGE -->
+  <div class="page" id="page-events">
+    <div class="section-header mb-5">
+      <div>
+        <div class="section-title">Manage Events</div>
+        <div class="section-sub">Create and manage your events</div>
+      </div>
+      <button class="btn-primary-custom" onclick="showAddEventModal()">+ Add Event</button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;" id="eventsGrid">
+      <div class="empty-state" style="grid-column:1/-1;">
+        <div class="empty-icon">🗓️</div>
+        <div class="empty-title">No events created</div>
+        <div class="empty-sub">Click "Add Event" to create your first event</div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('editModal')">✕</button>
+    <div class="modal-title">Edit Participant</div>
+    <div class="modal-sub">Update participant information below</div>
+    <input type="hidden" id="edit-id">
+    <div class="form-group">
+      <label class="form-label">Full Name <span style="color:var(--coral)">*</span></label>
+      <input type="text" class="form-control-custom" id="edit-name">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Email Address <span style="color:var(--coral)">*</span></label>
+      <input type="email" class="form-control-custom" id="edit-email">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Phone Number</label>
+      <input type="tel" class="form-control-custom" id="edit-phone">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Event</label>
+      <select class="form-control-custom" id="edit-event"></select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Organization</label>
+      <input type="text" class="form-control-custom" id="edit-org">
+    </div>
+    <div style="display:flex;gap:12px;margin-top:8px;">
+      <button class="btn-primary-custom" onclick="saveEdit()">💾 Save Changes</button>
+      <button class="btn-secondary-custom" onclick="closeModal('editModal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE MODAL -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal-box" style="max-width:400px;">
+    <button class="modal-close" onclick="closeModal('deleteModal')">✕</button>
+    <div style="text-align:center;padding:16px 0;">
+      <div style="font-size:48px;margin-bottom:16px;">⚠️</div>
+      <div class="modal-title">Delete Participant?</div>
+      <div class="modal-sub" id="deleteModalSub">This action cannot be undone.</div>
+      <div style="display:flex;gap:12px;justify-content:center;margin-top:24px;">
+        <button class="btn-primary-custom" style="background:linear-gradient(135deg,var(--coral-dark),#c0392b);" onclick="confirmDelete()">🗑️ Delete</button>
+        <button class="btn-secondary-custom" onclick="closeModal('deleteModal')">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD EVENT MODAL -->
+<div class="modal-overlay" id="addEventModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('addEventModal')">✕</button>
+    <div class="modal-title">Create New Event</div>
+    <div class="modal-sub">Fill in the event details below</div>
+    <div class="form-group">
+      <label class="form-label">Event Name <span style="color:var(--coral)">*</span></label>
+      <input type="text" class="form-control-custom" id="ev-name" placeholder="e.g. Tech Summit 2025">
+    </div>
+    <div class="row-grid" style="grid-template-columns:1fr 1fr;">
+      <div class="form-group">
+        <label class="form-label">Date</label>
+        <input type="date" class="form-control-custom" id="ev-date">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Venue</label>
+        <input type="text" class="form-control-custom" id="ev-venue" placeholder="Location">
+      </div>
+    </div>
+    <div class="row-grid" style="grid-template-columns:1fr 1fr;">
+      <div class="form-group">
+        <label class="form-label">Category</label>
+        <select class="form-control-custom" id="ev-cat">
+          <option>Conference</option><option>Workshop</option>
+          <option>Seminar</option><option>Networking</option>
+          <option>Hackathon</option><option>Exhibition</option><option>Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Capacity</label>
+        <input type="number" class="form-control-custom" id="ev-cap" placeholder="100" min="1">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Description</label>
+      <textarea class="form-control-custom" id="ev-desc" placeholder="Brief event description..." rows="3" style="resize:vertical;"></textarea>
+    </div>
+    <div style="display:flex;gap:12px;margin-top:8px;">
+      <button class="btn-primary-custom" onclick="addEvent()">🗓️ Create Event</button>
+      <button class="btn-secondary-custom" onclick="closeModal('addEventModal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================
+// DATA STORE
+// ============================
+let participants = JSON.parse(localStorage.getItem('ef_participants') || '[]');
+let events = JSON.parse(localStorage.getItem('ef_events') || '[]');
+
+// Seed default events if empty
+if(events.length === 0){
+  events = [
+    {id:'ev1',name:'Tech Summit 2025',date:'2025-06-15',venue:'Karachi Expo Center',category:'Conference',capacity:200,desc:'Annual technology conference'},
+    {id:'ev2',name:'AI & ML Workshop',date:'2025-06-20',venue:'NUST Islamabad',category:'Workshop',capacity:80,desc:'Hands-on machine learning workshop'},
+    {id:'ev3',name:'Startup Networking Night',date:'2025-06-25',venue:'The Nest Lahore',category:'Networking',capacity:120,desc:'Connect with fellow entrepreneurs'},
+    {id:'ev4',name:'Web Dev Bootcamp',date:'2025-07-01',venue:'Online (Zoom)',category:'Workshop',capacity:150,desc:'Full-stack development bootcamp'},
+  ];
+  saveData();
+}
+
+let deleteTargetId = null;
+let attendanceFilter = 'all';
+let attendanceChart = null;
+let eventChart = null;
+
+function saveData(){
+  localStorage.setItem('ef_participants', JSON.stringify(participants));
+  localStorage.setItem('ef_events', JSON.stringify(events));
+}
+
+// ============================
+// NAVIGATION
+// ============================
+function showPage(page, el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  if(el) el.classList.add('active');
+  const titles = {
+    dashboard:'Admin Dashboard',register:'Register Participant',
+    participants:'Participant Management',passes:'Entry Passes & QR Codes',
+    attendance:'Attendance Management',events:'Manage Events'
+  };
+  document.getElementById('topbarTitle').textContent = titles[page]||page;
+  closeSidebar();
+  if(page==='dashboard') renderDashboard();
+  if(page==='participants') renderParticipants();
+  if(page==='passes') renderPasses();
+  if(page==='attendance') renderAttendance();
+  if(page==='events') renderEvents();
+  if(page==='register') { populateEventDropdowns(); updateQuickStats(); }
+}
+
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('show');
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('show');
+}
+
+// ============================
+// REGISTRATION
+// ============================
+function populateEventDropdowns(){
+  ['reg-event','edit-event','filterEvent'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(!el) return;
+    const val = el.value;
+    const isFilter = id==='filterEvent';
+    el.innerHTML = isFilter ? '<option value="">All Events</option>' : '<option value="">— Choose an event —</option>';
+    events.forEach(ev=>{
+      const opt = document.createElement('option');
+      opt.value = ev.id; opt.textContent = ev.name;
+      el.appendChild(opt);
+    });
+    el.value = val;
+  });
+}
+
+function registerParticipant(e){
+  e.preventDefault();
+  const name = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const phone = document.getElementById('reg-phone').value.trim();
+  const eventId = document.getElementById('reg-event').value;
+  const org = document.getElementById('reg-org').value.trim();
+  if(!name||!email||!phone||!eventId){ showToast('⚠️','Please fill all required fields','warning'); return; }
+  const dup = participants.find(p=>p.email===email && p.eventId===eventId);
+  if(dup){ showToast('⚠️','This email is already registered for this event','warning'); return; }
+  const id = 'P'+Date.now().toString(36).toUpperCase();
+  const ev = events.find(e=>e.id===eventId);
+  const p = {
+    id, name, email, phone, eventId, eventName: ev?ev.name:'Unknown',
+    org, present:false,
+    registeredAt: new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})
+  };
+  participants.push(p);
+  saveData();
+  updateParticipantBadge();
+  updateQuickStats();
+  showToast('✅','Participant registered successfully! Entry pass generated.','success');
+  clearForm();
+}
+
+function clearForm(){
+  ['reg-name','reg-email','reg-phone','reg-org'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('reg-event').value='';
+}
+
+function updateQuickStats(){
+  document.getElementById('qs-total').textContent = participants.length;
+  document.getElementById('qs-events').textContent = events.length;
+  document.getElementById('qs-attended').textContent = participants.filter(p=>p.present).length;
+}
+
+// ============================
+// PARTICIPANTS TABLE
+// ============================
+function renderParticipants(list){
+  const data = list || participants;
+  const tbody = document.getElementById('participantsTable');
+  document.getElementById('participants-count').textContent = `${data.length} registered participant${data.length!==1?'s':''}`;
+  if(!data.length){
+    tbody.innerHTML = '<tr class="no-participants-row"><td colspan="7">No participants found.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.map((p,i)=>`
+    <tr>
+      <td style="color:var(--text-muted);font-size:12px;">${i+1}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="avatar">${p.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}</div>
+          <div>
+            <div style="font-weight:500;font-size:14px;">${p.name}</div>
+            ${p.org?`<div style="font-size:11px;color:var(--text-muted);">${p.org}</div>`:''}
+          </div>
+        </div>
+      </td>
+      <td>
+        <div style="font-size:13px;">${p.email}</div>
+        <div style="font-size:11px;color:var(--text-muted);">${p.phone}</div>
+      </td>
+      <td><span class="badge-event">${p.eventName}</span></td>
+      <td style="font-size:12px;color:var(--text-secondary);">${p.registeredAt}</td>
+      <td>
+        <span class="badge-custom ${p.present?'badge-present':'badge-absent'}">
+          ${p.present?'● Present':'○ Absent'}
+        </span>
+      </td>
+      <td>
+        <div style="display:flex;gap:6px;">
+          <button class="action-btn success" title="Toggle Attendance" onclick="quickToggleAttendance('${p.id}')">✓</button>
+          <button class="action-btn" title="Edit" onclick="openEditModal('${p.id}')">✏️</button>
+          <button class="action-btn" title="View Pass" onclick="showPage('passes',document.querySelector('.nav-item:nth-child(6)'));setTimeout(()=>scrollToPass('${p.id}'),300)">🎫</button>
+          <button class="action-btn danger" title="Delete" onclick="openDeleteModal('${p.id}')">🗑️</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function filterParticipants(){
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const ev = document.getElementById('filterEvent').value;
+  const filtered = participants.filter(p=>{
+    const matchQ = !q || p.name.toLowerCase().includes(q)||p.email.toLowerCase().includes(q)||p.eventName.toLowerCase().includes(q)||(p.phone&&p.phone.includes(q));
+    const matchEv = !ev || p.eventId===ev;
+    return matchQ && matchEv;
+  });
+  renderParticipants(filtered);
+}
+
+function quickToggleAttendance(id){
+  const p = participants.find(x=>x.id===id);
+  if(!p) return;
+  p.present = !p.present;
+  saveData();
+  filterParticipants();
+  updateDashboardStats();
+  showToast(p.present?'✅':'○', `${p.name} marked ${p.present?'present':'absent'}`, p.present?'success':'info');
+}
+
+// ============================
+// PASSES & QR
+// ============================
+function renderPasses(list){
+  const data = list || participants;
+  const container = document.getElementById('passContainer');
+  if(!data.length){
+    container.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><div class="empty-icon">🎫</div><div class="empty-title">No passes generated</div><div class="empty-sub">Register participants to generate their entry passes</div></div>`;
+    return;
+  }
+  container.innerHTML = data.map(p=>`
+    <div class="event-pass" id="pass-${p.id}">
+      <div class="pass-header">
+        <div class="pass-event-label">Entry Pass</div>
+        <div class="pass-event-name">${p.eventName}</div>
+      </div>
+      <div class="pass-perforated"><div class="pass-dots"></div></div>
+      <div class="pass-body">
+        <div class="pass-info">
+          <div class="pass-field">
+            <div class="pass-field-label">Name</div>
+            <div class="pass-field-value">${p.name}</div>
+          </div>
+          <div class="pass-field">
+            <div class="pass-field-label">Pass ID</div>
+            <div class="pass-field-value" style="font-family:monospace;color:var(--indigo-light);">${p.id}</div>
+          </div>
+        </div>
+        <div class="pass-info" style="margin-top:12px;">
+          <div class="pass-field">
+            <div class="pass-field-label">Email</div>
+            <div class="pass-field-value" style="font-size:12px;">${p.email}</div>
+          </div>
+          <div class="pass-field">
+            <div class="pass-field-label">Registered</div>
+            <div class="pass-field-value" style="font-size:12px;">${p.registeredAt}</div>
+          </div>
+        </div>
+        <div class="pass-qr" id="qr-${p.id}"></div>
+        <div class="pass-id">${p.id}</div>
+      </div>
+      <div class="pass-footer">
+        <span>
+          <span class="pass-status-dot" style="background:${p.present?'var(--mint)':'var(--coral)'}"></span>
+          ${p.present?'Checked In':'Not Checked In'}
+        </span>
+        <button onclick="toggleAttendanceFromPass('${p.id}')" style="background:transparent;border:1px solid var(--border);color:var(--text-secondary);padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;transition:var(--transition);">
+          ${p.present?'Mark Absent':'Check In'}
+        </button>
+      </div>
+    </div>
+  `).join('');
+
+  // Generate QR codes after DOM renders
+  requestAnimationFrame(()=>{
+    data.forEach(p=>{
+      const el = document.getElementById('qr-'+p.id);
+      if(el && !el.querySelector('canvas') && !el.querySelector('img')){
+        try{
+          const canvas = document.createElement('canvas');
+          el.appendChild(canvas);
+          QRGen.render(canvas, `EVENTFLOW:${p.id}:${p.name}:${p.eventName}`, 104);
+        }catch(e){}
+      }
+    });
+  });
+}
+
+function filterPasses(){
+  const q = document.getElementById('passSearch').value.toLowerCase();
+  const filtered = participants.filter(p=>!q||p.name.toLowerCase().includes(q)||p.id.toLowerCase().includes(q)||p.eventName.toLowerCase().includes(q));
+  renderPasses(filtered);
+}
+
+function scrollToPass(id){
+  const el = document.getElementById('pass-'+id);
+  if(el) el.scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+function toggleAttendanceFromPass(id){
+  const p = participants.find(x=>x.id===id);
+  if(!p) return;
+  p.present = !p.present;
+  saveData();
+  renderPasses();
+  updateDashboardStats();
+  showToast(p.present?'✅':'○',`${p.name} ${p.present?'checked in':'checked out'}`,p.present?'success':'info');
+}
+
+// ============================
+// ATTENDANCE
+// ============================
+function renderAttendance(){
+  updateAttendanceStats();
+  const container = document.getElementById('attendanceList');
+  const filtered = attendanceFilter==='all' ? participants : participants.filter(p=>p.eventId===attendanceFilter);
+  if(!filtered.length){
+    container.innerHTML = `<div class="empty-state"><div class="empty-icon">✅</div><div class="empty-title">No participants</div><div class="empty-sub">Register participants first</div></div>`;
+    return;
+  }
+  container.innerHTML = filtered.map(p=>`
+    <div class="attendance-card">
+      <div class="avatar">${p.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}</div>
+      <div class="attendance-info">
+        <div class="attendance-name">${p.name}</div>
+        <div class="attendance-meta">${p.eventName} · ${p.email}</div>
+      </div>
+      <span class="badge-custom ${p.present?'badge-present':'badge-absent'}" style="margin-right:12px;">
+        ${p.present?'Present':'Absent'}
+      </span>
+      <button class="attendance-toggle ${p.present?'present':'absent'}" onclick="toggleAttendance('${p.id}')" title="Toggle attendance"></button>
+    </div>
+  `).join('');
+  renderEventFilterPills();
+}
+
+function toggleAttendance(id){
+  const p = participants.find(x=>x.id===id);
+  if(!p) return;
+  p.present = !p.present;
+  saveData();
+  renderAttendance();
+  updateDashboardStats();
+  showToast(p.present?'✅':'○',`${p.name} marked ${p.present?'present':'absent'}`,p.present?'success':'info');
+}
+
+function filterAttendance(evId, el){
+  attendanceFilter = evId;
+  document.querySelectorAll('#eventFilter .event-pill').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  renderAttendance();
+}
+
+function renderEventFilterPills(){
+  const container = document.getElementById('eventFilter');
+  const activeEv = attendanceFilter;
+  container.innerHTML = `<button class="event-pill ${activeEv==='all'?'active':''}" onclick="filterAttendance('all',this)">All Events</button>`;
+  events.forEach(ev=>{
+    const btn = document.createElement('button');
+    btn.className = `event-pill ${activeEv===ev.id?'active':''}`;
+    btn.textContent = ev.name;
+    btn.onclick = function(){ filterAttendance(ev.id,this); };
+    container.appendChild(btn);
+  });
+}
+
+function updateAttendanceStats(){
+  const filtered = attendanceFilter==='all' ? participants : participants.filter(p=>p.eventId===attendanceFilter);
+  const present = filtered.filter(p=>p.present).length;
+  const absent = filtered.length - present;
+  const rate = filtered.length ? Math.round(present/filtered.length*100) : 0;
+  document.getElementById('att-present').textContent = present;
+  document.getElementById('att-absent').textContent = absent;
+  document.getElementById('att-rate').textContent = rate+'%';
+}
+
+// ============================
+// EVENTS
+// ============================
+function renderEvents(){
+  const grid = document.getElementById('eventsGrid');
+  if(!events.length){
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><div class="empty-icon">🗓️</div><div class="empty-title">No events created</div><div class="empty-sub">Click "Add Event" to get started</div></div>`;
+    return;
+  }
+  const colors = ['#6C63FF','#FF6584','#43E8D8','#FFB347','#A29BFE','#FD79A8'];
+  grid.innerHTML = events.map((ev,i)=>{
+    const count = participants.filter(p=>p.eventId===ev.id).length;
+    const present = participants.filter(p=>p.eventId===ev.id&&p.present).length;
+    const cap = ev.capacity||100;
+    const pct = Math.min(100,Math.round(count/cap*100));
+    const color = colors[i%colors.length];
+    return `
+      <div class="glass-card" style="padding:0;overflow:hidden;">
+        <div style="height:6px;background:linear-gradient(90deg,${color},${color}88);"></div>
+        <div style="padding:20px;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
+            <div>
+              <div style="font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:600;margin-bottom:3px;">${ev.name}</div>
+              <span class="badge-registered">${ev.category}</span>
+            </div>
+            <div style="display:flex;gap:6px;">
+              <button class="action-btn" title="Edit" onclick="openEditEventModal('${ev.id}')">✏️</button>
+              <button class="action-btn danger" title="Delete" onclick="deleteEvent('${ev.id}')">🗑️</button>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">
+            <div style="font-size:12px;color:var(--text-secondary);">📅 ${ev.date||'TBD'}</div>
+            <div style="font-size:12px;color:var(--text-secondary);">📍 ${ev.venue||'TBD'}</div>
+            <div style="font-size:12px;color:var(--text-secondary);">👥 ${count} / ${cap}</div>
+            <div style="font-size:12px;color:var(--mint);">✅ ${present} present</div>
+          </div>
+          <div style="margin-bottom:6px;display:flex;justify-content:space-between;">
+            <span style="font-size:11px;color:var(--text-muted);">Registration capacity</span>
+            <span style="font-size:11px;color:var(--text-secondary);">${pct}%</span>
+          </div>
+          <div class="progress-bar-wrap">
+            <div class="progress-bar-fill" style="width:${pct}%;background:linear-gradient(90deg,${color},${color}88);"></div>
+          </div>
+          ${ev.desc?`<div style="font-size:12px;color:var(--text-muted);margin-top:12px;line-height:1.5;">${ev.desc}</div>`:''}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function showAddEventModal(){
+  ['ev-name','ev-date','ev-venue','ev-desc'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('ev-cap').value='';
+  document.getElementById('ev-cat').value='Conference';
+  openModal('addEventModal');
+}
+
+function addEvent(){
+  const name = document.getElementById('ev-name').value.trim();
+  if(!name){ showToast('⚠️','Event name is required','warning'); return; }
+  const ev = {
+    id:'ev'+Date.now().toString(36),
+    name,
+    date:document.getElementById('ev-date').value,
+    venue:document.getElementById('ev-venue').value,
+    category:document.getElementById('ev-cat').value,
+    capacity:parseInt(document.getElementById('ev-cap').value)||100,
+    desc:document.getElementById('ev-desc').value
+  };
+  events.push(ev);
+  saveData();
+  closeModal('addEventModal');
+  renderEvents();
+  populateEventDropdowns();
+  showToast('🗓️','Event created successfully','success');
+}
+
+function deleteEvent(id){
+  if(!confirm('Delete this event? Participants registered for this event will also be removed.')) return;
+  events = events.filter(e=>e.id!==id);
+  participants = participants.filter(p=>p.eventId!==id);
+  saveData();
+  renderEvents();
+  populateEventDropdowns();
+  updateParticipantBadge();
+  showToast('🗑️','Event deleted','info');
+}
+
+function openEditEventModal(id){
+  // Simple inline approach - just open add modal pre-filled
+  const ev = events.find(e=>e.id===id);
+  if(!ev) return;
+  document.getElementById('ev-name').value = ev.name;
+  document.getElementById('ev-date').value = ev.date||'';
+  document.getElementById('ev-venue').value = ev.venue||'';
+  document.getElementById('ev-cat').value = ev.category||'Conference';
+  document.getElementById('ev-cap').value = ev.capacity||'';
+  document.getElementById('ev-desc').value = ev.desc||'';
+  openModal('addEventModal');
+  // Override add to update
+  const btn = document.querySelector('#addEventModal .btn-primary-custom');
+  btn.textContent = '💾 Update Event';
+  btn.onclick = ()=>{
+    ev.name = document.getElementById('ev-name').value.trim()||ev.name;
+    ev.date = document.getElementById('ev-date').value;
+    ev.venue = document.getElementById('ev-venue').value;
+    ev.category = document.getElementById('ev-cat').value;
+    ev.capacity = parseInt(document.getElementById('ev-cap').value)||100;
+    ev.desc = document.getElementById('ev-desc').value;
+    // update participant event names
+    participants.filter(p=>p.eventId===id).forEach(p=>p.eventName=ev.name);
+    saveData();
+    closeModal('addEventModal');
+    btn.textContent='🗓️ Create Event';
+    btn.onclick=addEvent;
+    renderEvents();
+    populateEventDropdowns();
+    showToast('✅','Event updated','success');
+  };
+}
+
+// ============================
+// EDIT/DELETE MODALS
+// ============================
+function openEditModal(id){
+  const p = participants.find(x=>x.id===id);
+  if(!p) return;
+  populateEventDropdowns();
+  document.getElementById('edit-id').value = p.id;
+  document.getElementById('edit-name').value = p.name;
+  document.getElementById('edit-email').value = p.email;
+  document.getElementById('edit-phone').value = p.phone;
+  document.getElementById('edit-event').value = p.eventId;
+  document.getElementById('edit-org').value = p.org||'';
+  openModal('editModal');
+}
+
+function saveEdit(){
+  const id = document.getElementById('edit-id').value;
+  const p = participants.find(x=>x.id===id);
+  if(!p) return;
+  p.name = document.getElementById('edit-name').value.trim()||p.name;
+  p.email = document.getElementById('edit-email').value.trim()||p.email;
+  p.phone = document.getElementById('edit-phone').value.trim()||p.phone;
+  const evId = document.getElementById('edit-event').value;
+  p.eventId = evId;
+  p.eventName = (events.find(e=>e.id===evId)||{name:p.eventName}).name;
+  p.org = document.getElementById('edit-org').value.trim();
+  saveData();
+  closeModal('editModal');
+  filterParticipants();
+  updateDashboardStats();
+  showToast('✅','Participant updated','success');
+}
+
+function openDeleteModal(id){
+  deleteTargetId = id;
+  const p = participants.find(x=>x.id===id);
+  document.getElementById('deleteModalSub').textContent = p ? `Remove "${p.name}" from all records?` : 'This cannot be undone.';
+  openModal('deleteModal');
+}
+
+function confirmDelete(){
+  participants = participants.filter(p=>p.id!==deleteTargetId);
+  saveData();
+  closeModal('deleteModal');
+  filterParticipants();
+  updateParticipantBadge();
+  updateDashboardStats();
+  showToast('🗑️','Participant removed','info');
+  deleteTargetId = null;
+}
+
+// ============================
+// DASHBOARD
+// ============================
+function renderDashboard(){
+  updateDashboardStats();
+  renderCharts();
+  renderEventProgress();
+}
+
+function updateDashboardStats(){
+  const total = participants.length;
+  const present = participants.filter(p=>p.present).length;
+  const absent = total - present;
+  const rate = total ? Math.round(present/total*100) : 0;
+  document.getElementById('dash-total').textContent = total;
+  document.getElementById('dash-present').textContent = present;
+  document.getElementById('dash-events').textContent = events.length;
+  document.getElementById('dash-absent').textContent = absent;
+  document.getElementById('dash-total-change').textContent = `↑ ${total} registered`;
+  document.getElementById('dash-attendance-rate').textContent = `${rate}% attendance rate`;
+  document.getElementById('dash-absent-pct').textContent = `${total?Math.round(absent/total*100):0}% of total`;
+  updateParticipantBadge();
+}
+
+function updateParticipantBadge(){
+  document.getElementById('participantBadge').textContent = participants.length;
+}
+
+function renderCharts(){
+  const present = participants.filter(p=>p.present).length;
+  const absent = participants.length - present;
+
+  // Attendance doughnut
+  const attCtx = document.getElementById('attendanceChart');
+  if(attCtx){
+    if(attendanceChart) attendanceChart.destroy();
+    attendanceChart = new Chart(attCtx.getContext('2d'),{
+      type:'doughnut',
+      data:{
+        labels:['Present','Absent','No Data'],
+        datasets:[{
+          data: participants.length ? [present, absent] : [0,0,1],
+          backgroundColor: participants.length ? ['rgba(67,232,216,0.8)','rgba(255,101,132,0.8)'] : ['rgba(255,255,255,0.05)'],
+          borderColor: participants.length ? ['#43E8D8','#FF6584'] : ['rgba(255,255,255,0.1)'],
+          borderWidth:2,hoverOffset:6
+        }]
+      },
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        plugins:{
+          legend:{
+            position:'bottom',
+            labels:{color:'rgba(255,255,255,0.6)',font:{size:12},padding:16}
+          }
+        },
+        cutout:'68%'
+      }
+    });
+  }
+
+  // Event bar chart
+  const evCtx = document.getElementById('eventChart');
+  if(evCtx){
+    if(eventChart) eventChart.destroy();
+    const evLabels = events.map(e=>e.name.length>14?e.name.slice(0,14)+'…':e.name);
+    const evCounts = events.map(e=>participants.filter(p=>p.eventId===e.id).length);
+    eventChart = new Chart(evCtx.getContext('2d'),{
+      type:'bar',
+      data:{
+        labels: evLabels.length ? evLabels : ['No events'],
+        datasets:[{
+          label:'Participants',
+          data: evCounts.length ? evCounts : [0],
+          backgroundColor:'rgba(108,99,255,0.6)',
+          borderColor:'rgba(108,99,255,1)',
+          borderWidth:1,borderRadius:6,
+        }]
+      },
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false}},
+        scales:{
+          x:{ticks:{color:'rgba(255,255,255,0.5)',font:{size:11}},grid:{color:'rgba(255,255,255,0.04)'}},
+          y:{ticks:{color:'rgba(255,255,255,0.5)',font:{size:11},stepSize:1},grid:{color:'rgba(255,255,255,0.06)'}}
+        }
+      }
+    });
+  }
+}
+
+function renderEventProgress(){
+  const container = document.getElementById('eventProgressList');
+  if(!events.length){
+    container.innerHTML = `<div class="empty-state"><div class="empty-icon">🎪</div><div class="empty-title">No events yet</div><div class="empty-sub">Create events first</div></div>`;
+    return;
+  }
+  const colors = ['#6C63FF','#FF6584','#43E8D8','#FFB347'];
+  container.innerHTML = events.map((ev,i)=>{
+    const count = participants.filter(p=>p.eventId===ev.id).length;
+    const present = participants.filter(p=>p.eventId===ev.id&&p.present).length;
+    const cap = ev.capacity||100;
+    const regPct = Math.min(100,Math.round(count/cap*100));
+    const attPct = count ? Math.round(present/count*100) : 0;
+    const color = colors[i%colors.length];
+    return `
+      <div style="margin-bottom:20px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+          <div style="font-size:14px;font-weight:500;">${ev.name}</div>
+          <div style="font-size:12px;color:var(--text-secondary);">${count} / ${cap} registered · ${present} present</div>
+        </div>
+        <div style="display:grid;gap:6px;">
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
+              <span style="font-size:11px;color:var(--text-muted);">Registrations</span>
+              <span style="font-size:11px;color:var(--text-secondary);">${regPct}%</span>
+            </div>
+            <div class="progress-bar-wrap">
+              <div class="progress-bar-fill" style="width:${regPct}%;background:${color};"></div>
+            </div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
+              <span style="font-size:11px;color:var(--text-muted);">Attendance</span>
+              <span style="font-size:11px;color:var(--mint);">${attPct}%</span>
+            </div>
+            <div class="progress-bar-wrap">
+              <div class="progress-bar-fill" style="width:${attPct}%;background:var(--mint);"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ============================
+// MODAL HELPERS
+// ============================
+function openModal(id){document.getElementById(id).classList.add('show');}
+function closeModal(id){document.getElementById(id).classList.remove('show');}
+document.addEventListener('click',e=>{
+  if(e.target.classList.contains('modal-overlay')) e.target.classList.remove('show');
+});
+
+// ============================
+// TOAST
+// ============================
+function showToast(icon, msg, type){
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = 'toast-item';
+  const colors = {success:'var(--mint)',warning:'var(--amber)',info:'var(--indigo-light)',error:'var(--coral)'};
+  toast.style.borderColor = colors[type]||'var(--card-border)';
+  toast.innerHTML = `<span class="toast-icon">${icon}</span><span class="toast-msg">${msg}</span>`;
+  container.appendChild(toast);
+  setTimeout(()=>{
+    toast.style.opacity='0';toast.style.transform='translateX(20px)';toast.style.transition='all 0.3s ease';
+    setTimeout(()=>toast.remove(),300);
+  },3000);
+}
+const QRGen = (function(){
+  const GF=256,PRIM=285;
+  function gfPow(x,p){let r=1;for(let i=0;i<p;i++)r=gfMul(r,x);return r;}
+  function gfMul(x,y){if(x===0||y===0)return 0;return EXP[(LOG[x]+LOG[y])%255];}
+  const EXP=new Uint8Array(512),LOG=new Uint8Array(256);
+  (function(){let x=1;for(let i=0;i<255;i++){EXP[i]=x;LOG[x]=i;x=x<<1;if(x&256)x^=PRIM;}for(let i=255;i<512;i++)EXP[i]=EXP[i-255];})();
+  function rsGen(ns){let g=[1];for(let i=0;i<ns;i++){let p=[1,gfPow(2,i)];let ng=new Array(g.length+1).fill(0);for(let j=0;j<g.length;j++)for(let k=0;k<p.length;k++)ng[j+k]^=gfMul(g[j],p[k]);g=ng;}return g;}
+  function rsEncode(data,ns){const g=rsGen(ns),r=data.slice();r.push(...new Array(ns).fill(0));for(let i=0;i<data.length;i++){const c=r[i];if(c!==0)for(let j=0;j<g.length;j++)r[i+j]^=gfMul(g[j],c);}return r.slice(data.length);}
+  const VER=2,ECL=2,NMOD=25,DCODEWORDS=28,ECCWORDS=16;
+  function encode(text){
+    const bytes=[...text].map(c=>c.charCodeAt(0));
+    const bits=[];
+    function addBits(val,len){for(let i=len-1;i>=0;i--)bits.push((val>>i)&1);}
+    addBits(0b0100,4);addBits(bytes.length,8);bytes.forEach(b=>addBits(b,8));
+    for(let i=0;i<4&&bits.length<DCODEWORDS*8;i++)bits.push(0);
+    while(bits.length%8)bits.push(0);
+    const PAD=[0xEC,0x11];let pi=0;
+    while(bits.length<DCODEWORDS*8){addBits(PAD[pi%2],8);pi++;}
+    const data=[];for(let i=0;i<bits.length;i+=8){let b=0;for(let j=0;j<8;j++)b=(b<<1)|bits[i+j];data.push(b);}
+    const ecc=rsEncode(data,ECCWORDS);
+    const all=[...data,...ecc];
+    const fb=[];all.forEach(b=>{for(let i=7;i>=0;i--)fb.push((b>>i)&1);});
+    return fb;
+  }
+  function setFinder(mat,r,c){
+    for(let dr=-1;dr<=7;dr++)for(let dc=-1;dc<=7;dc++){
+      if(r+dr<0||r+dr>=NMOD||c+dc<0||c+dc>=NMOD)continue;
+      const v=(dr>=0&&dr<=6&&(dc===0||dc===6))||(dc>=0&&dc<=6&&(dr===0||dr===6))||(dr>=2&&dr<=4&&dc>=2&&dc<=4);
+      mat[r+dr][c+dc]=v?1:0;
+    }
+  }
+  function setAlign(mat,r,c){
+    for(let dr=-2;dr<=2;dr++)for(let dc=-2;dc<=2;dc++){
+      mat[r+dr][c+dc]=(Math.abs(dr)===2||Math.abs(dc)===2||dr===0&&dc===0)?1:0;
+    }
+  }
+  function buildMatrix(dataBits){
+    const mat=Array.from({length:NMOD},()=>new Array(NMOD).fill(-1));
+    setFinder(mat,0,0);setFinder(mat,0,NMOD-7);setFinder(mat,NMOD-7,0);
+    for(let i=8;i<NMOD-8;i++){mat[6][i]=i%2===0?1:0;mat[i][6]=i%2===0?1:0;}
+    mat[4*VER+9][8]=1;
+    setAlign(mat,18,18);
+    const fmt=0b101010000010010;
+    const fmtBits=[];for(let i=14;i>=0;i--)fmtBits.push((fmt>>i)&1);
+    const fpos=[0,1,2,3,4,5,7,8];
+    fpos.forEach((p,i)=>{mat[8][p]=fmtBits[i];mat[p][8]=fmtBits[14-i];});
+    mat[8][8]=fmtBits[6];
+    for(let i=0;i<8;i++){mat[NMOD-1-i][8]=fmtBits[i];mat[8][NMOD-8+i]=fmtBits[14-i];}
+    let bi=0;let up=true;
+    for(let c=NMOD-1;c>=0;c-=2){
+      if(c===6)c=5;
+      for(let ri=0;ri<NMOD;ri++){
+        const r=up?NMOD-1-ri:ri;
+        for(let dc=0;dc<=1;dc++){
+          const cc=c-dc;
+          if(mat[r][cc]===-1){
+            const bit=bi<dataBits.length?dataBits[bi++]:0;
+            mat[r][cc]=(r+cc)%2===0?bit^1:bit;
+          }
+        }
+      }
+      up=!up;
+    }
+    return mat;
+  }
+  function render(canvas,text,size){
+    let data;
+    try{data=encode(text);}catch(e){data=encode(text.slice(0,30));}
+    const mat=buildMatrix(data);
+    const Q=Math.floor(size/NMOD);
+    const off=Math.floor((size-Q*NMOD)/2);
+    canvas.width=size;canvas.height=size;
+    const ctx=canvas.getContext('2d');
+    ctx.fillStyle='#ffffff';ctx.fillRect(0,0,size,size);
+    ctx.fillStyle='#12112A';
+    for(let r=0;r<NMOD;r++)for(let c=0;c<NMOD;c++){
+      if(mat[r][c]===1)ctx.fillRect(off+c*Q,off+r*Q,Q,Q);
+    }
+  }
+  return {render};
+})();
+
+function makeQR(containerId, text, size){
+  const el=document.getElementById(containerId);
+  if(!el)return;
+  el.innerHTML='';
+  const canvas=document.createElement('canvas');
+  el.appendChild(canvas);
+  QRGen.render(canvas, text, size);
+}
+
+function makeQRCanvas(text, size){
+  const canvas=document.createElement('canvas');
+  QRGen.render(canvas, text, size);
+  return canvas;
+}
+
+// ============================
+// INIT
+// ============================
+window.onload = ()=>{
+  populateEventDropdowns();
+  updateParticipantBadge();
+  renderDashboard();
+  // Responsive chart grid
+  const chartsRow = document.getElementById('chartsRow');
+  if(window.innerWidth < 600) chartsRow.style.gridTemplateColumns = '1fr';
+};
+window.onresize = ()=>{
+  const chartsRow = document.getElementById('chartsRow');
+  chartsRow.style.gridTemplateColumns = window.innerWidth < 600 ? '1fr' : '1fr 1fr';
+};
+</script>
+</body>
+</html>
