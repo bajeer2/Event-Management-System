@@ -83,7 +83,7 @@ No build tools. No frameworks. No backend. **One file does everything.**
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/your-username/event-management-system.git
+https://github.com/bajeer2/Event-Management-System.git
 
 # 2. Open the file in your browser
 # Windows:
